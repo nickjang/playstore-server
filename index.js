@@ -6,32 +6,34 @@ const Store = require('./playStore');
 const app = express();
 app.use(morgan('dev'));
 
-app.get('/apps', (req, res)=>{
-	const { sort, genres } = req.query;
-	const collection = Store;
-	const validGenres = ['Action', 'Puzzle', 'Strategy', 'Casual', 'Arcade', 'Card'];
+app.get('/apps', (req, res) => {
+  const { sort, genres } = req.query;
+  let collection = Store;
+  const validGenres = ['Action', 'Puzzle', 'Strategy', 'Casual', 'Arcade', 'Card'];
 
-	if (sort && sort !== 'rating' && sort !== 'app') {
-		return res
-			.status(400)
-			.json( { message: 'invalid sort: must be one of "rating" or "app"' } );
-	}
+  if (sort && sort !== 'Rating' && sort !== 'App') {
+    return res
+      .status(400)
+      .json({ message: 'invalid sort: must be one of "Rating" or "App"' });
+  }
 
-	if (genres && !validGenres.some(currEl=> genres.toLowerCase() === currEl.toLowerCase())){
-		return res
-			.status(400)
-			.json( { message: `invalid genre: must be one of ${validGenres.join(', ')}` } );
-	}
+  if (genres && !validGenres.some(currEl => genres.toLowerCase() === currEl.toLowerCase())) {
+    return res
+      .status(400)
+      .json({ message: `invalid genre: must be one of ${validGenres.join(', ')}` });
+  }
 
-	if (sort) {
-		//sort buy whatever
-	}
+  if (sort) {
+    collection.sort((a, b) => {
+      return a[sort] > b[sort] ? 1 : a[sort] < b[sort] ? -1 : 0;
+    });
+  }
 
-	if (genres) {
-		//filter genre
-	}
+  if (genres) {
+    collection = collection.filter(app => app.Genres.includes(genres));
+  }
 
-	res.json(collection);
+  res.json(collection);
 });
 
 app.listen(8000, () => 'Server listening on PORT 8000');
